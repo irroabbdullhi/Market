@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Your Account Profile</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 32px;
+        }
+        @media (max-width: 768px) {
+            .profile-layout { grid-template-columns: 1fr; }
+        }
+        .order-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: var(--transition-base);
+        }
+        .order-card:hover {
+            box-shadow: var(--card-shadow);
+        }
+    </style>
+</head>
+<body>
+
+    <header></header>
+
+    <main class="container" style="margin-top: 40px; min-height: 75vh; padding-bottom: 48px;">
+        <div class="profile-layout">
+            <!-- Sidebar navigation panels switcher -->
+            <aside class="flex flex-col gap-2">
+                <button class="sidebar-link active" data-target="orders-tab">
+                    <span class="material-icons-round">receipt_long</span> Order History
+                </button>
+                <button class="sidebar-link" data-target="profile-tab">
+                    <span class="material-icons-round">manage_accounts</span> Account Details
+                </button>
+                <button class="sidebar-link" data-target="wishlist-tab">
+                    <span class="material-icons-round">favorite</span> My Wishlist
+                </button>
+            </aside>
+
+            <!-- Main panels contents -->
+            <section style="flex: 1;">
+                
+                <!-- 1. ORDERS HISTORY & STATUS TIMELINE TRACKER -->
+                <div id="orders-tab" class="profile-panel">
+                    <h2 class="text-xl font-bold" style="margin-bottom: 24px;">Your Orders</h2>
+                    
+                    <div class="flex flex-col gap-6" id="order-history-list">
+                        <!-- Injected -->
+                    </div>
+                </div>
+
+                <!-- 2. EDIT PROFILE TAB -->
+                <div id="profile-tab" class="profile-panel hidden">
+                    <h2 class="text-xl font-bold" style="margin-bottom: 24px;">Account Details</h2>
+                    
+                    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 28px; box-shadow: var(--card-shadow);">
+                        <form id="profile-edit-form">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-group">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" id="prof-name" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" id="prof-phone" class="form-input" placeholder="+252..." required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Default Shipping Address</label>
+                                <textarea id="prof-ship-addr" class="form-input" style="height: 80px;" placeholder="House number, Street name, City, State"></textarea>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0;">
+                                <label class="form-label">Default Billing Address</label>
+                                <textarea id="prof-bill-addr" class="form-input" style="height: 80px;" placeholder="Same as shipping or different details"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="margin-top: 24px; padding: 12px 24px;">
+                                Save Changes
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 3. WISHLIST PANEL -->
+                <div id="wishlist-tab" class="profile-panel hidden">
+                    <h2 class="text-xl font-bold" style="margin-bottom: 24px;">My Wishlist</h2>
+                    <div class="grid grid-cols-3 gap-6" id="wishlist-items-grid">
+                        <!-- Injected -->
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer></footer>
+
+    <!-- Interactive scripting driver -->
+    <script type="module">
+        import { authService } from '../js/services/authService.js';
+        import { dbService } from '../js/services/dbService.js';
+        import { createProductCardHTML, bindProductCardListeners } from '../js/components/ProductCard.js';
+        import { getLocalizedText, formatCurrency, formatDate, showToast } from '../js/utils/helpers.js';
+
+        let currentUser = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth status
+            const session = await authService.getSession();
+            if (!session?.user) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            currentUser = session.user;
+
+            // Handle panel tabs switching
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const panels = document.querySelectorAll('.profile-panel');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    panels.forEach(p => p.classList.add('hidden'));
+                    document.getElementById(link.dataset.target).classList.remove('hidden');
+                });
+            });
+
+            // Read query param tab switches
+            const params = new URLSearchParams(window.location.search);
+            const activeTab = params.get('tab');
+            if (activeTab === 'wishlist') {
+                document.querySelector('[data-target="wishlist-tab"]').click();
+            } else if (activeTab === 'profile') {
+                document.querySelector('[data-target="profile-tab"]').click();
+            }
+
+            // Load panel data
+            await loadOrders();
+            await loadProfile();
+            await loadWishlist();
+        });
+
+        // 1. Load User Orders history
+        async function loadOrders() {
+            const listEl = document.getElementById('order-history-list');
+            const orders = await dbService.getOrders('customer', currentUser.id);
+
+            if (orders.length === 0) {
+                listEl.innerHTML = `<p class="text-sm" style="color: var(--text-tertiary); font-style: italic;">No orders placed yet.</p>`;
+                return;
+            }
+
+            listEl.innerHTML = orders.map(order => {
+                const total = order.total_amount;
+                const status = order.status;
+                const date = order.created_at ? formatDate(order.created_at) : order.date;
+                const paymentStatus = order.payment_status;
+
+                // Visual Status Timeline variables
+                let step1 = 'active', step2 = '', step3 = '', step4 = '';
+                if (paymentStatus === 'verified' || status === 'paid') {
+                    step2 = 'active';
+                }
+                if (order.delivery_status === 'shipped' || order.delivery_status === 'out_for_delivery') {
+                    step2 = 'active';
+                    step3 = 'active';
+                }
+                if (status === 'completed' || order.delivery_status === 'delivered') {
+                    step2 = 'active';
+                    step3 = 'active';
+                    step4 = 'active';
+                }
+
+                let badgeColor = '#ff6f00';
+                if (status === 'completed') badgeColor = 'var(--color-brand)';
+                if (status === 'cancelled') badgeColor = '#ef4444';
+
+                return `
+                    <div class="order-card" data-order-id="${order.id}">
+                        <div class="flex justify-between align-center flex-wrap gap-4" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+                            <div class="flex-col">
+                                <span class="text-sm font-bold" style="color: var(--color-brand);">Order ID: #${order.id.slice(0, 8).toUpperCase()}</span>
+                                <span class="text-xs" style="color: var(--text-tertiary);">Placed on: ${date}</span>
+                            </div>
+                            <div class="flex align-center gap-3">
+                                <span class="text-xs font-bold" style="background-color: ${badgeColor}15; color: ${badgeColor}; padding: 6px 12px; border-radius: var(--radius-full); text-transform: uppercase;">
+                                    ${status}
+                                </span>
+                                <span class="text-sm font-bold" style="color: var(--text-primary);">${formatCurrency(total)}</span>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Status Timeline -->
+                        <div class="flex justify-between" style="position: relative; margin-bottom: 24px; max-width: 480px; width: 100%; margin-left: auto; margin-right: auto; padding-top: 12px;">
+                            <div style="position: absolute; top: 22px; left: 10%; right: 10%; height: 2px; background-color: var(--border-color); z-index: 1;"></div>
+                            
+                            <div class="flex flex-col align-center" style="z-index: 2; position: relative;">
+                                <div class="timeline-icon ${step1}" style="position: static; margin-bottom: 6px; width: 20px; height: 20px;"></div>
+                                <span class="text-xs font-bold" style="color: var(--text-secondary);">Ordered</span>
+                            </div>
+                            <div class="flex flex-col align-center" style="z-index: 2; position: relative;">
+                                <div class="timeline-icon ${step2}" style="position: static; margin-bottom: 6px; width: 20px; height: 20px;"></div>
+                                <span class="text-xs font-bold" style="color: var(--text-secondary);">Paid</span>
+                            </div>
+                            <div class="flex flex-col align-center" style="z-index: 2; position: relative;">
+                                <div class="timeline-icon ${step3}" style="position: static; margin-bottom: 6px; width: 20px; height: 20px;"></div>
+                                <span class="text-xs font-bold" style="color: var(--text-secondary);">Shipped</span>
+                            </div>
+                            <div class="flex flex-col align-center" style="z-index: 2; position: relative;">
+                                <div class="timeline-icon ${step4}" style="position: static; margin-bottom: 6px; width: 20px; height: 20px;"></div>
+                                <span class="text-xs font-bold" style="color: var(--text-secondary);">Delivered</span>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown panel showing order items -->
+                        <div class="flex-col gap-3" style="border-top: 1px dashed var(--border-color); padding-top: 16px;">
+                            <h4 class="text-xs font-bold" style="color: var(--text-secondary); text-transform: uppercase;">Shipment Items</h4>
+                            <div class="flex-col gap-2">
+                                ${order.order_items?.map(item => `
+                                    <div class="flex justify-between text-xs font-semibold" style="color: var(--text-primary);">
+                                        <span>${item.products?.name_en || 'Product Item'} (x${item.quantity})</span>
+                                        <span>${formatCurrency(item.price * item.quantity)}</span>
+                                    </div>
+                                `).join('') || `
+                                    <span class="text-xs text-tertiary">Multi-Vendor items logs</span>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 2. Load and Submit profile changes
+        async function loadProfile() {
+            const profile = await authService.getUserProfile(currentUser.id);
+            if (profile) {
+                document.getElementById('prof-name').value = profile.full_name || '';
+                document.getElementById('prof-phone').value = profile.phone || '';
+                document.getElementById('prof-ship-addr').value = profile.shipping_address || '';
+                document.getElementById('prof-bill-addr').value = profile.billing_address || '';
+            }
+
+            document.getElementById('profile-edit-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fullName = document.getElementById('prof-name').value;
+                const phone = document.getElementById('prof-phone').value;
+                const ship = document.getElementById('prof-ship-addr').value;
+                const bill = document.getElementById('prof-bill-addr').value;
+
+                try {
+                    await authService.updateProfile(currentUser.id, { fullName, phone, billingAddress: bill, shippingAddress: ship });
+                    showToast('Profile updated successfully!');
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+        }
+
+        // 3. Load user wishlist
+        async function loadWishlist() {
+            const grid = document.getElementById('wishlist-items-grid');
+            
+            // Read from cache mock wishlist if Supabase isn't configured
+            const localWish = JSON.parse(localStorage.getItem('suuqlink_wishlist') || '[]');
+            const products = await dbService.getProducts();
+
+            // Filter products in wishlist
+            const wishProds = products.filter(p => localWish.includes(p.id));
+
+            if (wishProds.length === 0) {
+                grid.innerHTML = `<p class="text-sm" style="color: var(--text-tertiary); font-style: italic; grid-column: span 3;">Your wishlist is empty.</p>`;
+                return;
+            }
+
+            grid.innerHTML = wishProds.map(p => createProductCardHTML(p)).join('');
+            bindProductCardListeners('#wishlist-items-grid');
+        }
+    </script>
+</body>
+</html>

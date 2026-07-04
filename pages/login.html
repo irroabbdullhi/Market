@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Access Your Account</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+</head>
+<body>
+
+    <header></header>
+
+    <main class="container" style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 40px 0;">
+        <div class="auth-container">
+            <!-- Tabs Header -->
+            <div class="auth-tabs" id="auth-tabs-header">
+                <button class="auth-tab active" data-target="login-tab">Sign In</button>
+                <button class="auth-tab" data-target="register-tab">Register</button>
+            </div>
+
+            <div class="auth-body">
+                <!-- 1. LOGIN TAB -->
+                <div id="login-tab" class="auth-form-panel">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="login-email" class="form-input" placeholder="you@example.com" required autocomplete="username">
+                        </div>
+                        <div class="form-group">
+                            <div class="flex justify-between align-center" style="margin-bottom: 6px;">
+                                <label class="form-label" style="margin-bottom: 0;">Password</label>
+                                <a href="#" id="forgot-password-link" class="text-xs font-semibold" style="color: var(--color-brand);">Forgot Password?</a>
+                            </div>
+                            <input type="password" id="login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full" style="padding: 12px; margin-top: 8px;">Sign In</button>
+                    </form>
+
+                    <div style="text-align: center; margin: 24px 0 16px 0; color: var(--text-tertiary); font-size: 13px; position: relative;">
+                        <span style="background-color: var(--bg-primary); padding: 0 12px; position: relative; z-index: 2;">Or continue with</span>
+                        <div style="position: absolute; top: 50%; left: 0; right: 0; height: 1px; background-color: var(--border-color); z-index: 1;"></div>
+                    </div>
+
+                    <button id="google-login-btn" class="btn btn-secondary w-full" style="padding: 12px; display: flex; gap: 8px; align-center justify-center;">
+                        <img src="https://lh3.googleusercontent.com/COxitqgJr1sICBg1t9EEEO4A6508Oih1cl1by27ZILXSwwVLqEb374DZ3wJEecA6Q97w" alt="Google" style="width: 18px; height: 18px; object-fit: contain;">
+                        Continue with Google
+                    </button>
+                </div>
+
+                <!-- 2. REGISTER TAB -->
+                <div id="register-tab" class="auth-form-panel hidden">
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" id="reg-name" class="form-input" placeholder="John Doe" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="reg-email" class="form-input" placeholder="you@example.com" required autocomplete="email">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Phone Number</label>
+                            <input type="tel" id="reg-phone" class="form-input" placeholder="+252 61 XXXXXXX" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Account Role</label>
+                            <select id="reg-role" class="form-input" required style="cursor: pointer;">
+                                <option value="customer">Customer (Buy Local)</option>
+                                <option value="seller">Seller / Merchant (Sell on SuuqLink)</option>
+                                <option value="driver">Logistics Driver (Deliver Goods)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Password</label>
+                            <input type="password" id="reg-password" class="form-input" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full" style="padding: 12px; margin-top: 8px;">Create Account</button>
+                    </form>
+                </div>
+
+                <!-- 3. FORGOT PASSWORD FORM -->
+                <div id="forgot-tab" class="auth-form-panel hidden">
+                    <h3 class="text-lg font-bold" style="margin-bottom: 8px;">Reset Password</h3>
+                    <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 20px;">Enter your registered email address and we will email you a password recovery link.</p>
+                    <form id="forgot-form">
+                        <div class="form-group">
+                            <label class="form-label">Email Address</label>
+                            <input type="email" id="forgot-email" class="form-input" placeholder="you@example.com" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full" style="padding: 12px;">Send Recovery Email</button>
+                        <button type="button" id="back-to-login-btn" class="btn btn-secondary w-full" style="padding: 12px; margin-top: 12px;">Back to Sign In</button>
+                    </form>
+                </div>
+
+                <!-- 4. RESET PASSWORD ACTIONS -->
+                <div id="reset-tab" class="auth-form-panel hidden">
+                    <h3 class="text-lg font-bold" style="margin-bottom: 8px;">Set New Password</h3>
+                    <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 20px;">Enter your brand new password below.</p>
+                    <form id="reset-form">
+                        <div class="form-group">
+                            <label class="form-label">New Password</label>
+                            <input type="password" id="reset-password" class="form-input" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-full" style="padding: 12px;">Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer></footer>
+
+    <!-- Interactive script triggers and route listeners -->
+    <script type="module">
+        import { authService } from '../js/services/authService.js';
+        import { showToast } from '../js/utils/helpers.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.auth-tab');
+            const panels = document.querySelectorAll('.auth-form-panel');
+            
+            // Check query param for default states
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialTab = urlParams.get('tab');
+            const defaultRole = urlParams.get('role');
+
+            if (defaultRole) {
+                const selectRole = document.getElementById('reg-role');
+                if (selectRole) selectRole.value = defaultRole;
+            }
+
+            if (initialTab === 'reset') {
+                showPanel('reset-tab');
+                document.getElementById('auth-tabs-header').classList.add('hidden');
+            }
+
+            // Tab selectors switching logic
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    showPanel(tab.dataset.target);
+                });
+            });
+
+            function showPanel(id) {
+                panels.forEach(p => p.classList.add('hidden'));
+                document.getElementById(id).classList.remove('hidden');
+            }
+
+            // Forgot password click
+            document.getElementById('forgot-password-link').addEventListener('click', (e) => {
+                e.preventDefault();
+                showPanel('forgot-tab');
+                document.getElementById('auth-tabs-header').classList.add('hidden');
+            });
+
+            document.getElementById('back-to-login-btn').addEventListener('click', () => {
+                showPanel('login-tab');
+                document.getElementById('auth-tabs-header').classList.remove('hidden');
+                tabs[0].click();
+            });
+
+            // 1. Submit Sign In
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const pass = document.getElementById('login-password').value;
+
+                try {
+                    const session = await authService.login(email, pass);
+                    showToast('Successfully signed in!');
+                    
+                    // Route to correct dashboard or homepage depending on role
+                    const role = await authService.getUserRole(session.user.id);
+                    setTimeout(() => {
+                        if (role === 'seller') window.location.href = '/pages/seller-dashboard.html';
+                        else if (role === 'admin') window.location.href = '/pages/admin-dashboard.html';
+                        else if (role === 'driver') window.location.href = '/pages/driver-dashboard.html';
+                        else window.location.href = '/';
+                    }, 1000);
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+
+            // 2. Submit Register
+            document.getElementById('register-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const name = document.getElementById('reg-name').value;
+                const email = document.getElementById('reg-email').value;
+                const phone = document.getElementById('reg-phone').value;
+                const role = document.getElementById('reg-role').value;
+                const pass = document.getElementById('reg-password').value;
+
+                try {
+                    await authService.register(email, pass, name, phone, role);
+                    showToast('Registration successful! Logging in...');
+                    
+                    // Automatically log in
+                    const session = await authService.login(email, pass);
+                    setTimeout(() => {
+                        if (role === 'seller') window.location.href = '/pages/seller-dashboard.html';
+                        else if (role === 'driver') window.location.href = '/pages/driver-dashboard.html';
+                        else window.location.href = '/';
+                    }, 1000);
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+
+            // 3. Submit Google Login
+            document.getElementById('google-login-btn').addEventListener('click', async () => {
+                try {
+                    await authService.loginWithGoogle();
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+
+            // 4. Submit Forgot Password
+            document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-email').value;
+                try {
+                    await authService.forgotPassword(email);
+                    showToast('Recovery link sent! Check your inbox.');
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+
+            // 5. Submit Reset Password
+            const resetForm = document.getElementById('reset-form');
+            if (resetForm) {
+                resetForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const pass = document.getElementById('reset-password').value;
+                    try {
+                        await authService.resetPassword(pass);
+                        showToast('Password updated! Redirecting to login...');
+                        setTimeout(() => {
+                            window.location.href = '/pages/login.html';
+                        }, 1500);
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

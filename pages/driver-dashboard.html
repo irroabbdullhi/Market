@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Driver Portal</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .driver-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 32px;
+            min-height: 100vh;
+        }
+        .driver-sidebar {
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .driver-main {
+            padding: 32px 0;
+        }
+        .delivery-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--card-shadow);
+        }
+    </style>
+</head>
+<body>
+
+    <header></header>
+
+    <main class="container driver-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="driver-sidebar">
+            <h3 class="text-xs font-bold" style="color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 12px;">Driver Hub</h3>
+            <button class="sidebar-link active w-full text-left" data-target="assigned-panel"><span class="material-icons-round">local_shipping</span> Active Deliveries</button>
+            <button class="sidebar-link w-full text-left" data-target="history-panel"><span class="material-icons-round">history</span> Delivery History</button>
+            
+            <div style="margin-top: auto; padding-top: 24px; border-top: 1px solid var(--border-color);" class="flex flex-col gap-3">
+                <span class="text-xs font-bold" style="color: var(--text-secondary);">Driver Duty Status</span>
+                <div class="flex gap-2">
+                    <button id="duty-online-btn" class="btn btn-secondary active flex-1" style="border-color: var(--color-brand); background-color: var(--color-brand-light); color: var(--color-brand); padding: 6px;">Online</button>
+                    <button id="duty-offline-btn" class="btn btn-secondary flex-1" style="padding: 6px;">Offline</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content Area Panels -->
+        <section class="driver-main">
+            <!-- PANEL 1: ACTIVE ASSIGNED SHIPMENTS -->
+            <div id="assigned-panel" class="driver-view-panel">
+                <h2 class="text-xl font-bold" style="margin-bottom: 8px;">Active Shipments</h2>
+                <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 24px;">Deliver active orders to client addresses as fast as possible.</p>
+                
+                <div class="flex flex-col" id="active-deliveries-list">
+                    <!-- Injected -->
+                </div>
+            </div>
+
+            <!-- PANEL 2: DELIVERIES HISTORY -->
+            <div id="history-panel" class="driver-view-panel hidden">
+                <h2 class="text-xl font-bold" style="margin-bottom: 8px;">Completed Shipments</h2>
+                <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 24px;">Log of historical parcels successfully delivered to buyers.</p>
+
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--card-shadow);">
+                    <table class="w-full" style="border-collapse: collapse; font-size: 13px;">
+                        <thead style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                            <tr>
+                                <th class="text-left" style="padding: 14px 20px;">Order ID</th>
+                                <th class="text-left" style="padding: 14px 20px;">Address</th>
+                                <th class="text-left" style="padding: 14px 20px;">Recipient</th>
+                                <th class="text-left" style="padding: 14px 20px;">Completed Date</th>
+                                <th class="text-left" style="padding: 14px 20px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <!-- Interactive script triggers -->
+    <script type="module">
+        import { dbService } from '../js/services/dbService.js';
+        import { authService } from '../js/services/authService.js';
+        import { formatDate, showToast } from '../js/utils/helpers.js';
+
+        let driverUser = null;
+        let deliveriesList = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check driver auth
+            const session = await authService.getSession();
+            if (!session?.user) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            driverUser = session.user;
+            const role = await authService.getUserRole(driverUser.id);
+            if (role !== 'driver') {
+                showToast('Access Denied. Drivers Only.', 'error');
+                setTimeout(() => { window.location.href = '/'; }, 1500);
+                return;
+            }
+
+            // Tabs routing
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const panels = document.querySelectorAll('.driver-view-panel');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    panels.forEach(p => p.classList.add('hidden'));
+                    document.getElementById(link.dataset.target).classList.remove('hidden');
+                });
+            });
+
+            // Online/Offline status togglers
+            const onlineBtn = document.getElementById('duty-online-btn');
+            const offlineBtn = document.getElementById('duty-offline-btn');
+
+            onlineBtn.addEventListener('click', () => {
+                onlineBtn.classList.add('active');
+                onlineBtn.style.cssText = 'border-color: var(--color-brand); background-color: var(--color-brand-light); color: var(--color-brand); padding: 6px;';
+                offlineBtn.classList.remove('active');
+                offlineBtn.style.cssText = 'padding: 6px;';
+                showToast('Status updated: You are now Online and accepting deliveries.');
+            });
+
+            offlineBtn.addEventListener('click', () => {
+                offlineBtn.classList.add('active');
+                offlineBtn.style.cssText = 'border-color: var(--color-accent); background-color: var(--color-accent-light); color: var(--color-accent); padding: 6px;';
+                onlineBtn.classList.remove('active');
+                onlineBtn.style.cssText = 'padding: 6px;';
+                showToast('Status updated: You are now Offline.', 'warning');
+            });
+
+            await loadDeliveries();
+        });
+
+        async function loadDeliveries() {
+            const listEl = document.getElementById('active-deliveries-list');
+            const tbody = document.getElementById('history-tbody');
+            
+            deliveriesList = await dbService.getDriverDeliveries(driverUser.id);
+
+            // 1. Render Active deliveries
+            const active = deliveriesList.filter(d => d.delivery_status !== 'delivered');
+            if (active.length === 0) {
+                listEl.innerHTML = `<p class="text-sm" style="color: var(--text-tertiary); font-style: italic;">No active deliveries assigned to you.</p>`;
+            } else {
+                listEl.innerHTML = active.map(d => {
+                    const order = d.orders;
+                    const customer = order?.profiles?.full_name || order?.customer_name || 'Buyer';
+                    const phone = order?.phone || '';
+                    
+                    let statusLabel = 'Assigned';
+                    let actionBtn = `<button class="btn btn-primary start-delivery-btn">Mark Picked Up</button>`;
+                    
+                    if (d.delivery_status === 'picked_up') {
+                        statusLabel = 'Picked Up';
+                        actionBtn = `<button class="btn btn-primary start-delivery-btn" style="background-color: var(--color-accent);">Out for Delivery</button>`;
+                    } else if (d.delivery_status === 'out_for_delivery') {
+                        statusLabel = 'Out for Delivery';
+                        actionBtn = `
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary complete-delivery-btn" style="background-color: var(--color-brand);">Mark Delivered</button>
+                                <button class="btn btn-secondary fail-delivery-btn" style="color: #ef4444;">Failed</button>
+                            </div>
+                        `;
+                    }
+
+                    return `
+                        <div class="delivery-card" data-delivery-id="${d.id}">
+                            <div class="flex justify-between align-center" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">
+                                <span class="text-sm font-bold" style="color: var(--color-brand);">Order ID: #${d.order_id.slice(0, 8).toUpperCase()}</span>
+                                <span class="text-xs font-bold" style="background-color: var(--border-color); padding: 4px 8px; border-radius: var(--radius-sm); text-transform: uppercase;">
+                                    ${statusLabel}
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-2" style="font-size: 13px; margin-bottom: 20px;">
+                                <div class="flex align-center gap-2"><span class="material-icons-round" style="font-size: 16px; color: var(--text-secondary);">person</span> <strong>Customer:</strong> ${customer}</div>
+                                <div class="flex align-center gap-2"><span class="material-icons-round" style="font-size: 16px; color: var(--text-secondary);">phone</span> <strong>Phone:</strong> <a href="tel:${phone}">${phone}</a></div>
+                                <div class="flex align-center gap-2"><span class="material-icons-round" style="font-size: 16px; color: var(--text-secondary);">place</span> <strong>Destination:</strong> ${d.delivery_address || order?.shipping_address}</div>
+                            </div>
+                            <div class="flex justify-end">
+                                ${actionBtn}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                bindActiveDeliveryActionHandlers();
+            }
+
+            // 2. Render Completed deliveries list
+            const completed = deliveriesList.filter(d => d.delivery_status === 'delivered');
+            if (completed.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 20px;">No completed delivery history.</td></tr>`;
+            } else {
+                tbody.innerHTML = completed.map(d => {
+                    const order = d.orders;
+                    const customer = order?.profiles?.full_name || order?.customer_name || 'Buyer';
+                    const date = d.actual_delivery_time ? formatDate(d.actual_delivery_time) : 'Completed';
+                    
+                    return `
+                        <tr>
+                            <td style="padding: 14px 20px;" class="font-semibold">#${d.order_id.slice(0, 8).toUpperCase()}</td>
+                            <td style="padding: 14px 20px;">${d.delivery_address || order?.shipping_address}</td>
+                            <td style="padding: 14px 20px;">${customer}</td>
+                            <td style="padding: 14px 20px;">${date}</td>
+                            <td style="padding: 14px 20px;"><span class="text-xs font-bold" style="color: var(--color-brand);">DELIVERED</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        function bindActiveDeliveryActionHandlers() {
+            document.querySelectorAll('.start-delivery-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const card = btn.closest('.delivery-card');
+                    const delId = card.dataset.deliveryId;
+                    const delivery = deliveriesList.find(d => d.id === delId);
+                    
+                    let nextStatus = 'picked_up';
+                    if (delivery.delivery_status === 'picked_up') nextStatus = 'out_for_delivery';
+
+                    try {
+                        await dbService.updateDeliveryStatus(delId, nextStatus);
+                        showToast(`Status updated: Order marked as ${nextStatus}.`);
+                        await loadDeliveries();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.complete-delivery-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const card = btn.closest('.delivery-card');
+                    const delId = card.dataset.deliveryId;
+                    try {
+                        await dbService.updateDeliveryStatus(delId, 'delivered');
+                        showToast('Status updated: Shipment successfully delivered!');
+                        await loadDeliveries();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.fail-delivery-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const card = btn.closest('.delivery-card');
+                    const delId = card.dataset.deliveryId;
+                    try {
+                        await dbService.updateDeliveryStatus(delId, 'failed');
+                        showToast('Status updated: Shipment marked as failed.', 'error');
+                        await loadDeliveries();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

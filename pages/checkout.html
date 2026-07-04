@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Complete Checkout</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .payment-method-card {
+            border: 2.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            cursor: pointer;
+            transition: var(--transition-base);
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+        }
+        .payment-method-card.active {
+            border-color: var(--color-brand);
+            background-color: var(--color-brand-light);
+        }
+    </style>
+</head>
+<body>
+
+    <header></header>
+
+    <main class="container" style="margin-top: 32px; min-height: 75vh;">
+        <h1 class="text-2xl font-bold" style="margin-bottom: 24px;">Checkout Details</h1>
+
+        <form id="checkout-form">
+            <div class="flex justify-between gap-8 flex-wrap">
+                <!-- Left Column: Shipping details and Receipt Upload -->
+                <div style="flex: 2; min-width: 320px;" class="flex flex-col gap-6">
+                    
+                    <!-- 1. Delivery Details -->
+                    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--card-shadow);">
+                        <h3 class="text-base font-bold" style="margin-bottom: 16px;">1. Shipping &amp; Delivery</h3>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">Full Name</label>
+                                <input type="text" id="ship-name" class="form-input" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Number</label>
+                                <input type="tel" id="ship-phone" class="form-input" placeholder="+252 61..." required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Shipping Address Line 1</label>
+                            <input type="text" id="ship-addr1" class="form-input" placeholder="House #, Street name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Shipping Address Line 2 (Optional)</label>
+                            <input type="text" id="ship-addr2" class="form-input" placeholder="Apartment, Landmark">
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">City</label>
+                                <input type="text" id="ship-city" class="form-input" placeholder="Mogadishu" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">State / Region</label>
+                                <input type="text" id="ship-state" class="form-input" placeholder="Banaadir" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Country</label>
+                                <input type="text" id="ship-country" class="form-input" value="Somalia" readonly>
+                            </div>
+                        </div>
+
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label">Delivery Options</label>
+                            <div class="flex gap-4">
+                                <button type="button" id="delivery-home-btn" class="btn btn-secondary active flex-1" style="border-color: var(--color-brand); background-color: var(--color-brand-light); color: var(--color-brand);">
+                                    <span class="material-icons-round">local_shipping</span> Home Delivery (+$5)
+                                </button>
+                                <button type="button" id="delivery-pickup-btn" class="btn btn-secondary flex-1">
+                                    <span class="material-icons-round">storefront</span> Store Pickup (+$0)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Manual Mobile Payments & Receipt Upload -->
+                    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--card-shadow);">
+                        <h3 class="text-base font-bold" style="margin-bottom: 8px;">2. Local Mobile Payment</h3>
+                        <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 16px;">
+                            We accept direct manual payments. Select your provider, dial the merchant code on your phone, and upload a screenshot of your payment receipt below.
+                        </p>
+
+                        <div class="flex gap-3 flex-wrap" style="margin-bottom: 20px;">
+                            <div class="payment-method-card active" data-method="evc_plus">
+                                <h4 class="text-sm font-bold">EVC Plus</h4>
+                                <span class="text-xs" style="color: var(--text-secondary);">Hormuud</span>
+                            </div>
+                            <div class="payment-method-card" data-method="sahal">
+                                <h4 class="text-sm font-bold">Sahal</h4>
+                                <span class="text-xs" style="color: var(--text-secondary);">Golis</span>
+                            </div>
+                            <div class="payment-method-card" data-method="edahab">
+                                <h4 class="text-sm font-bold">eDahab</h4>
+                                <span class="text-xs" style="color: var(--text-secondary);">Telesom</span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Instructions Details -->
+                        <div id="payment-instructions" style="background-color: var(--bg-secondary); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; font-size: 13px;">
+                            <!-- Injected -->
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="form-group">
+                                <label class="form-label">Transaction ID / Reference</label>
+                                <input type="text" id="pay-ref" class="form-input" placeholder="e.g. TXN982039120" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Upload Receipt Screenshot</label>
+                                <input type="file" id="pay-receipt-file" class="form-input" accept="image/*" required style="padding: 8px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Sidebar summaries -->
+                <div style="flex: 1; min-width: 300px;">
+                    <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; box-shadow: var(--card-shadow); position: sticky; top: 100px;">
+                        <h3 class="text-base font-bold" style="margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">Order Summary</h3>
+                        
+                        <div class="flex-col gap-3" style="font-size: 13px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+                            <div class="flex justify-between">
+                                <span style="color: var(--text-secondary);">Subtotal</span>
+                                <span class="font-bold" id="summary-subtotal">$0.00</span>
+                            </div>
+                            <div class="flex justify-between hidden" id="summary-discount-row" style="color: var(--color-accent);">
+                                <span>Discount Code</span>
+                                <span class="font-bold" id="summary-discount">-$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span style="color: var(--text-secondary);">Delivery Charges</span>
+                                <span class="font-bold" id="summary-shipping">$5.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span style="color: var(--text-secondary);">VAT Tax (5%)</span>
+                                <span class="font-bold" id="summary-tax">$0.00</span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-between align-center font-bold" style="font-size: 16px; margin-bottom: 24px;">
+                            <span>Grand Total</span>
+                            <span id="summary-total" style="color: var(--color-brand);">$0.00</span>
+                        </div>
+
+                        <div class="flex align-center gap-2" style="background-color: var(--color-accent-light); color: var(--color-accent); padding: 12px; border-radius: var(--radius-sm); font-size: 11px; margin-bottom: 24px; line-height: 1.4;">
+                            <span class="material-icons-round" style="font-size: 18px;">info</span>
+                            <span>Orders remain processing until manual payment proof is verified by admins.</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-full" style="padding: 14px;">
+                            Submit Order &amp; Proof
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <footer></footer>
+
+    <!-- Scripts drivers -->
+    <script type="module">
+        import { dbService } from '../js/services/dbService.js';
+        import { authService } from '../js/services/authService.js';
+        import { formatCurrency, showToast } from '../js/utils/helpers.js';
+
+        let calcData = {};
+        let activeMethod = 'evc_plus';
+        let deliveryMethod = 'home_delivery';
+
+        const PAY_INSTRUCTIONS = {
+            evc_plus: {
+                merchant: '*712*615293029*__AMOUNT__#',
+                title: 'EVC Plus (Hormuud)',
+                desc: 'Please dial Hormuud merchant code: <strong>*712*615293029*Amount#</strong> on your phone. Input the exact total amount in USD.'
+            },
+            sahal: {
+                merchant: '*812*907812030*__AMOUNT__#',
+                title: 'Sahal (Golis)',
+                desc: 'Please dial Golis merchant code: <strong>*812*907812030*Amount#</strong> on your phone. Input the exact total amount in USD.'
+            },
+            edahab: {
+                merchant: '*363*618910293*__AMOUNT__#',
+                title: 'eDahab (Telesom)',
+                desc: 'Please dial Telesom merchant code: <strong>*363*618910293*Amount#</strong> on your phone. Input the exact total amount in USD.'
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth status
+            const session = await authService.getSession();
+            if (!session?.user) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            // Fill user profile defaults
+            const profile = await authService.getUserProfile(session.user.id);
+            if (profile) {
+                document.getElementById('ship-name').value = profile.full_name || '';
+                document.getElementById('ship-phone').value = profile.phone || '';
+                document.getElementById('ship-addr1').value = profile.shipping_address || '';
+            }
+
+            // Read calculations
+            calcData = JSON.parse(sessionStorage.getItem('suuqlink_checkout_calc') || '{}');
+            if (!calcData.total) {
+                window.location.href = '/pages/cart.html';
+                return;
+            }
+
+            updateSummaryBox();
+            updateInstructionBox();
+
+            // Toggle Delivery Options
+            const homeBtn = document.getElementById('delivery-home-btn');
+            const pickupBtn = document.getElementById('delivery-pickup-btn');
+
+            homeBtn.addEventListener('click', () => {
+                setDelivery('home_delivery', homeBtn, pickupBtn);
+            });
+
+            pickupBtn.addEventListener('click', () => {
+                setDelivery('store_pickup', pickupBtn, homeBtn);
+            });
+
+            // Toggle Payment Method Cards
+            const methodCards = document.querySelectorAll('.payment-method-card');
+            methodCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    methodCards.forEach(c => c.classList.remove('active'));
+                    card.classList.add('active');
+                    activeMethod = card.dataset.method;
+                    updateInstructionBox();
+                });
+            });
+
+            // Handle Submit Form
+            document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const name = document.getElementById('ship-name').value;
+                const phone = document.getElementById('ship-phone').value;
+                const addr1 = document.getElementById('ship-addr1').value;
+                const addr2 = document.getElementById('ship-addr2').value;
+                const city = document.getElementById('ship-city').value;
+                const state = document.getElementById('ship-state').value;
+                
+                const addressText = `${addr1}${addr2 ? ', ' + addr2 : ''}, ${city}, ${state}, Somalia`;
+                const payRef = document.getElementById('pay-ref').value;
+                const fileInput = document.getElementById('pay-receipt-file');
+                const file = fileInput.files[0];
+
+                try {
+                    showToast('Submitting order... Please wait.');
+
+                    // Fetch user's cart items to record them
+                    const cartItems = await dbService.getCart(session.user.id);
+                    const formattedItems = cartItems.map(c => ({
+                        product_id: c.product_id,
+                        quantity: c.quantity,
+                        price: c.products.price,
+                        seller_id: c.products.seller_id
+                    }));
+
+                    const orderData = {
+                        customer_id: session.user.id,
+                        total_amount: calcData.total,
+                        shipping_address: addressText,
+                        phone: phone,
+                        payment_method: activeMethod,
+                        delivery_method: deliveryMethod,
+                        delivery_fee: calcData.shipping,
+                        tax: calcData.tax,
+                        discount_amount: calcData.discount,
+                        coupon_code: calcData.coupon_code
+                    };
+
+                    // 1. Create order
+                    const order = await dbService.createOrder(orderData, formattedItems);
+
+                    // 2. Submit payment and upload proof
+                    await dbService.submitPaymentProof(order.id, calcData.total, activeMethod, payRef, file);
+
+                    showToast('Order and payment proof submitted successfully!');
+                    
+                    // Clear calculated cache session
+                    sessionStorage.removeItem('suuqlink_checkout_calc');
+
+                    setTimeout(() => {
+                        window.location.href = '/pages/profile.html?tab=orders';
+                    }, 1500);
+
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+        });
+
+        function setDelivery(type, activeBtn, inactiveBtn) {
+            deliveryMethod = type;
+            activeBtn.classList.add('active');
+            activeBtn.style.cssText = 'border-color: var(--color-brand); background-color: var(--color-brand-light); color: var(--color-brand);';
+            inactiveBtn.classList.remove('active');
+            inactiveBtn.style.cssText = '';
+
+            // Update calculations shipping cost
+            calcData.shipping = type === 'home_delivery' ? 5.00 : 0.00;
+            calcData.total = calcData.subtotal - calcData.discount + calcData.shipping + calcData.tax;
+
+            updateSummaryBox();
+            updateInstructionBox();
+        }
+
+        function updateSummaryBox() {
+            document.getElementById('summary-subtotal').textContent = formatCurrency(calcData.subtotal);
+            
+            const discRow = document.getElementById('summary-discount-row');
+            if (calcData.discount > 0) {
+                discRow.classList.remove('hidden');
+                document.getElementById('summary-discount').textContent = `-${formatCurrency(calcData.discount)}`;
+            } else {
+                discRow.classList.add('hidden');
+            }
+
+            document.getElementById('summary-shipping').textContent = formatCurrency(calcData.shipping);
+            document.getElementById('summary-tax').textContent = formatCurrency(calcData.tax);
+            document.getElementById('summary-total').textContent = formatCurrency(calcData.total);
+        }
+
+        function updateInstructionBox() {
+            const instBox = document.getElementById('payment-instructions');
+            const data = PAY_INSTRUCTIONS[activeMethod];
+            const code = data.merchant.replace('__AMOUNT__', calcData.total.toFixed(2));
+            
+            instBox.innerHTML = `
+                <h4 class="font-bold" style="color: var(--text-primary); margin-bottom: 6px;">Instructions for ${data.title}</h4>
+                <p style="color: var(--text-secondary); margin-bottom: 8px;">${data.desc}</p>
+                <div style="background-color: var(--bg-primary); border: 1.5px dashed var(--color-brand); border-radius: var(--radius-sm); padding: 8px 12px; font-family: monospace; font-size: 14px; font-weight: 700; text-align: center; color: var(--color-brand);">
+                    ${code}
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

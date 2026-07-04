@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /pages/seller-dashboard.html
+Disallow: /pages/admin-dashboard.html
+Disallow: /pages/driver-dashboard.html
+
+Sitemap: https://suuqlink.com/sitemap.xml

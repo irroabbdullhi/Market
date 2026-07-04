@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Product Details</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .option-dot {
+            width: 24px;
+            height: 24px;
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: var(--transition-base);
+        }
+        .option-dot.active {
+            border-color: var(--color-brand);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <header></header>
+
+    <!-- Product Details Content -->
+    <main class="container" style="margin-top: 24px;">
+        <!-- Breadcrumbs -->
+        <nav class="flex align-center gap-2 text-xs font-semibold" style="color: var(--text-secondary); margin-bottom: 24px;">
+            <a href="/">Home</a>
+            <span class="material-icons-round" style="font-size: 14px;">keyboard_arrow_right</span>
+            <a href="#" id="breadcrumb-category">Electronics</a>
+            <span class="material-icons-round" style="font-size: 14px;">keyboard_arrow_right</span>
+            <a href="#" id="breadcrumb-sub">Audio</a>
+            <span class="material-icons-round" style="font-size: 14px;">keyboard_arrow_right</span>
+            <span style="color: var(--text-tertiary);" id="breadcrumb-title">Premium Noise Cancelling Headphones</span>
+        </nav>
+
+        <!-- Main Product Detail Layout -->
+        <div class="detail-grid">
+            <!-- Left Side: Image Gallery & Reviews -->
+            <div class="flex flex-col gap-8">
+                <!-- Large Image Container -->
+                <div class="flex gap-4">
+                    <!-- Thumbnails column -->
+                    <div class="flex flex-col gap-2" id="thumbnail-gallery" style="width: 80px;">
+                        <!-- Injected via script -->
+                    </div>
+                    
+                    <!-- Main Large Image -->
+                    <div style="flex: 1; border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; position: relative; background-color: var(--bg-primary); padding-top: 80%;">
+                        <img id="main-product-img" src="" alt="Product" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; padding: 16px;">
+                        <button style="position: absolute; bottom: 16px; right: 16px; background-color: var(--bg-primary); border-radius: var(--radius-full); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; box-shadow: var(--card-shadow);">
+                            <span class="material-icons-round">zoom_in</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Description & Specifications -->
+                <div class="flex flex-col gap-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 32px;">
+                    <div>
+                        <h3 class="text-lg font-bold" style="margin-bottom: 12px;">Product Details</h3>
+                        <p class="text-sm" id="detail-desc" style="color: var(--text-secondary); line-height: 1.6;"></p>
+                    </div>
+
+                    <!-- Key Features checklist -->
+                    <div>
+                        <h4 class="text-base font-bold" style="margin-bottom: 12px;">Key Features</h4>
+                        <div class="grid grid-cols-2 gap-4" id="detail-features">
+                            <!-- Injected -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reviews & Feedback -->
+                <div class="flex flex-col gap-6" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 32px;">
+                    <h3 class="text-lg font-bold">Reviews</h3>
+                    <div class="flex-col gap-4" id="reviews-list">
+                        <!-- Injected -->
+                    </div>
+                    <!-- Submit Review (if customer bought product) -->
+                    <form id="review-form" class="flex-col gap-3" style="border-top: 1px solid var(--border-color); padding-top: 24px; display: none;">
+                        <h4 class="text-sm font-bold">Write a Review</h4>
+                        <div class="flex gap-2">
+                            <span class="material-icons-round rating-star-icon" data-value="1" style="cursor: pointer;">star_border</span>
+                            <span class="material-icons-round rating-star-icon" data-value="2" style="cursor: pointer;">star_border</span>
+                            <span class="material-icons-round rating-star-icon" data-value="3" style="cursor: pointer;">star_border</span>
+                            <span class="material-icons-round rating-star-icon" data-value="4" style="cursor: pointer;">star_border</span>
+                            <span class="material-icons-round rating-star-icon" data-value="5" style="cursor: pointer;">star_border</span>
+                        </div>
+                        <textarea id="review-comment" class="form-input" style="height: 80px;" placeholder="Write your thoughts..." required></textarea>
+                        <button type="submit" class="btn btn-primary" style="align-self: flex-start;">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right Side: Buy Box Specs -->
+            <div class="flex flex-col gap-6">
+                <!-- Main Header Details -->
+                <div class="flex-col">
+                    <span class="text-xs font-bold text-green" id="detail-brand" style="color: var(--color-brand); text-transform: uppercase;">SONIQ LOCAL ELECTRONICS</span>
+                    <h1 class="text-3xl font-extrabold" id="detail-title" style="margin: 8px 0; line-height: 1.25;">EliteSound Pro X1000 - Wireless Noise Cancelling</h1>
+                    <div class="flex align-center gap-2 text-sm font-semibold">
+                        <span class="material-icons-round rating-star-icon">star</span>
+                        <span id="detail-rating">4.9</span>
+                        <span style="color: var(--text-tertiary);" id="detail-reviews-count">(1.2k Reviews)</span>
+                    </div>
+                </div>
+
+                <!-- Price and Badges -->
+                <div class="flex align-center gap-4">
+                    <span class="text-4xl font-extrabold" id="detail-price">$349.00</span>
+                    <span class="text-sm" id="detail-original-price" style="text-decoration: line-through; color: var(--text-tertiary);">$429.00</span>
+                    <span class="badge-green" id="detail-discount-badge" style="background-color: var(--color-accent-light); color: var(--color-accent);">-18%</span>
+                </div>
+
+                <!-- Highlights Boxes -->
+                <div class="flex flex-col gap-3">
+                    <div class="flex align-center gap-3" style="background-color: var(--bg-primary); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <span class="material-icons-round" style="color: var(--color-brand);">local_shipping</span>
+                        <div class="flex-col">
+                            <span class="text-xs font-bold">Fast Local Delivery</span>
+                            <span class="text-xs" style="color: var(--text-secondary);">Delivered by Tomorrow, 2:00 PM</span>
+                        </div>
+                    </div>
+                    <div class="flex align-center gap-3" style="background-color: var(--bg-primary); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                        <span class="material-icons-round" style="color: var(--color-brand);">verified_user</span>
+                        <div class="flex-col">
+                            <span class="text-xs font-bold">SuuqLink Verified</span>
+                            <span class="text-xs" style="color: var(--text-secondary);">1-Year Manufacturer Warranty + 30 Day Returns</span>
+                        </div>
+                    </div>
+                    <div class="flex align-center gap-2 text-xs font-bold" id="detail-stock-status" style="color: var(--color-brand);">
+                        <span class="material-icons-round" style="font-size: 16px;">check_circle</span>
+                        <span>In Stock: 42 units left</span>
+                    </div>
+                </div>
+
+                <!-- Options Custom Color Selectors -->
+                <div class="flex-col gap-2">
+                    <span class="text-xs font-bold" style="color: var(--text-secondary);">Color Options</span>
+                    <div class="flex gap-3" id="color-selectors">
+                        <!-- Injected -->
+                    </div>
+                </div>
+
+                <!-- Quantity Selector -->
+                <div class="flex align-center gap-4">
+                    <span class="text-xs font-bold" style="color: var(--text-secondary);">Quantity</span>
+                    <div class="flex align-center" style="border: 1px solid var(--border-color); border-radius: var(--radius-sm); overflow: hidden; background-color: var(--bg-primary);">
+                        <button class="btn-icon" id="qty-minus-btn" style="width: 36px; height: 36px; border-radius: 0;">-</button>
+                        <input type="number" id="qty-input" value="1" min="1" style="width: 48px; text-align: center; border: none; background: transparent; font-weight: 700; color: var(--text-primary);">
+                        <button class="btn-icon" id="qty-plus-btn" style="width: 36px; height: 36px; border-radius: 0;">+</button>
+                    </div>
+                </div>
+
+                <!-- Action checkout Buttons -->
+                <div class="flex gap-4" style="margin-top: 12px;">
+                    <button id="add-to-cart-btn" class="btn btn-outline-brand flex-1" style="padding: 14px;">
+                        <span class="material-icons-round">add_shopping_cart</span> Add to Cart
+                    </button>
+                    <button id="buy-now-btn" class="btn btn-primary flex-1" style="padding: 14px;">Buy Now</button>
+                </div>
+
+                <!-- Specs Panel at a Glance -->
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 24px; margin-top: 16px;">
+                    <h3 class="text-base font-bold">${t('at_a_glance')}</h3>
+                    <table class="detail-specs-table" id="specs-table">
+                        <!-- Injected -->
+                    </table>
+                </div>
+
+                <!-- Merchant Visit Card -->
+                <div class="flex align-center justify-between" style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 16px 20px;">
+                    <div class="flex align-center gap-3">
+                        <div class="shop-logo-circle" style="width: 48px; height: 48px; margin-bottom: 0;">
+                            <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=60" alt="Shop" style="width: 28px; height: 28px; object-fit: contain;">
+                        </div>
+                        <div class="flex-col">
+                            <span class="text-sm font-bold" id="merchant-name">Soniq Local Electronics</span>
+                            <span class="text-xs" style="color: var(--text-secondary);">Top Rated Merchant &bull; 4.98 Store Rating</span>
+                        </div>
+                    </div>
+                    <a href="#" id="visit-merchant-btn" class="btn btn-secondary" style="padding: 8px 16px; font-size: 12px;">Visit Store</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Finds section -->
+        <section style="margin-top: 64px;">
+            <div class="flex justify-between align-center" style="margin-bottom: 24px;">
+                <h2 class="text-xl font-bold">Similar Local Finds</h2>
+                <a href="/" class="flex align-center gap-2 font-semibold" style="color: var(--color-brand); font-size: 14px;">
+                    View all Category <span class="material-icons-round" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+            <div class="grid grid-cols-4 gap-6" id="similar-products-grid">
+                <!-- Injected -->
+            </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <!-- Interactive JS page drivers -->
+    <script type="module">
+        import { dbService } from '../js/services/dbService.js';
+        import { authService } from '../js/services/authService.js';
+        import { createProductCardHTML, bindProductCardListeners } from '../js/components/ProductCard.js';
+        import { getLocalizedText, formatCurrency, showToast } from '../js/utils/helpers.js';
+
+        let currentProduct = null;
+        let selectedColor = '';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('id') || 'p1';
+
+            currentProduct = await dbService.getProductById(productId);
+            if (!currentProduct) {
+                showToast('Product not found!', 'error');
+                return;
+            }
+
+            // Bind values to DOM
+            document.getElementById('breadcrumb-title').textContent = getLocalizedText(currentProduct, 'name');
+            document.getElementById('detail-title').textContent = getLocalizedText(currentProduct, 'name');
+            document.getElementById('detail-desc').textContent = getLocalizedText(currentProduct, 'description');
+            document.getElementById('detail-brand').textContent = currentProduct.brands?.name || 'Local Store';
+            document.getElementById('merchant-name').textContent = currentProduct.seller_name;
+            document.getElementById('detail-rating').textContent = currentProduct.rating || '5.0';
+            document.getElementById('detail-reviews-count').textContent = `(${currentProduct.reviews_count || 0} Reviews)`;
+            document.getElementById('detail-price').textContent = formatCurrency(currentProduct.price);
+            
+            const originalPrice = currentProduct.original_price || currentProduct.price;
+            const hasDiscount = originalPrice > currentProduct.price;
+            if (hasDiscount) {
+                document.getElementById('detail-original-price').textContent = formatCurrency(originalPrice);
+                document.getElementById('detail-discount-badge').textContent = `-${Math.round(((originalPrice - currentProduct.price) / originalPrice) * 100)}%`;
+            } else {
+                document.getElementById('detail-original-price').classList.add('hidden');
+                document.getElementById('detail-discount-badge').classList.add('hidden');
+            }
+
+            // Image sets
+            const mainImg = document.getElementById('main-product-img');
+            mainImg.src = currentProduct.images?.[0] || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=400';
+            
+            const thumbGallery = document.getElementById('thumbnail-gallery');
+            if (currentProduct.images?.length > 0) {
+                thumbGallery.innerHTML = currentProduct.images.map((img, i) => `
+                    <div class="flex justify-center align-center" style="border: 1px solid ${i === 0 ? 'var(--color-brand)' : 'var(--border-color)'}; border-radius: var(--radius-sm); overflow: hidden; height: 64px; cursor: pointer;" class="thumb-item" data-src="${img}">
+                        <img src="${img}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+                    </div>
+                `).join('');
+                
+                thumbGallery.querySelectorAll('div').forEach(item => {
+                    item.addEventListener('click', () => {
+                        thumbGallery.querySelectorAll('div').forEach(i => i.style.borderColor = 'var(--border-color)');
+                        item.style.borderColor = 'var(--color-brand)';
+                        mainImg.src = item.dataset.src;
+                    });
+                });
+            }
+
+            // Stock Details
+            document.getElementById('detail-stock-status').innerHTML = `
+                <span class="material-icons-round" style="font-size: 16px;">check_circle</span>
+                <span>In Stock: ${currentProduct.stock || 0} units left</span>
+            `;
+
+            // Colors Option Selectors
+            const colorSelectors = document.getElementById('color-selectors');
+            const colors = currentProduct.colors || ['Charcoal Black', 'Midnight Silver', 'Frost White'];
+            selectedColor = colors[0];
+            colorSelectors.innerHTML = colors.map((col, idx) => {
+                let colorHex = '#1e293b';
+                if (col.toLowerCase().includes('silver')) colorHex = '#e2e8f0';
+                if (col.toLowerCase().includes('blue')) colorHex = '#93c5fd';
+                if (col.toLowerCase().includes('black')) colorHex = '#0f172a';
+                if (col.toLowerCase().includes('white') || col.toLowerCase().includes('frost')) colorHex = '#f8fafc';
+                
+                return `
+                    <div class="option-dot ${idx === 0 ? 'active' : ''}" data-color="${col}" style="background-color: ${colorHex};" title="${col}"></div>
+                `;
+            }).join('');
+            
+            colorSelectors.querySelectorAll('.option-dot').forEach(dot => {
+                dot.addEventListener('click', () => {
+                    colorSelectors.querySelectorAll('.option-dot').forEach(d => d.classList.remove('active'));
+                    dot.classList.add('active');
+                    selectedColor = dot.dataset.color;
+                });
+            });
+
+            // Features Checklist
+            const featuresBox = document.getElementById('detail-features');
+            const features = currentProduct.features || [
+                'High fidelity output quality.',
+                'Dependable battery lifespan.',
+                'Premium warranty policies included.'
+            ];
+            featuresBox.innerHTML = features.map(feat => `
+                <div class="flex align-center gap-2 text-xs font-semibold" style="color: var(--text-secondary);">
+                    <span class="material-icons-round" style="color: var(--color-brand); font-size: 16px;">check_circle_outline</span>
+                    <span>${feat}</span>
+                </div>
+            `).join('');
+
+            // Specs Table Injection
+            const specsTable = document.getElementById('specs-table');
+            const specs = currentProduct.specs || {};
+            specsTable.innerHTML = Object.entries(specs).map(([key, val]) => `
+                <tr>
+                    <td>${key}</td>
+                    <td>${val}</td>
+                </tr>
+            `).join('');
+
+            // Quantity increments
+            const qtyInput = document.getElementById('qty-input');
+            document.getElementById('qty-minus-btn').addEventListener('click', () => {
+                if (qtyInput.value > 1) qtyInput.value--;
+            });
+            document.getElementById('qty-plus-btn').addEventListener('click', () => {
+                if (qtyInput.value < currentProduct.stock) qtyInput.value++;
+            });
+
+            // Actions: Add to Cart
+            const addCartBtn = document.getElementById('add-to-cart-btn');
+            addCartBtn.addEventListener('click', async () => {
+                const qty = parseInt(qtyInput.value);
+                const session = await authService.getSession();
+                try {
+                    if (session?.user) {
+                        await dbService.addToCart(session.user.id, currentProduct.id, qty);
+                    } else {
+                        // Guest Cart
+                        const localCart = JSON.parse(localStorage.getItem('suuqlink_cart') || '[]');
+                        const existing = localCart.find(c => c.product_id === currentProduct.id);
+                        if (existing) {
+                            existing.quantity += qty;
+                        } else {
+                            localCart.push({ product_id: currentProduct.id, quantity: qty });
+                        }
+                        localStorage.setItem('suuqlink_cart', JSON.stringify(localCart));
+                    }
+                    showToast('Added to cart!');
+                    window.dispatchEvent(new Event('cartchange'));
+                } catch (err) {
+                    showToast('Failed to add to cart', 'error');
+                }
+            });
+
+            // Buy Now direct checkout redirect
+            document.getElementById('buy-now-btn').addEventListener('click', () => {
+                // Perform quick add and redirect
+                addCartBtn.click();
+                setTimeout(() => {
+                    window.location.href = '/pages/cart.html';
+                }, 500);
+            });
+
+            // Load reviews
+            const revList = document.getElementById('reviews-list');
+            const reviews = await dbService.getProductReviews(currentProduct.id);
+            if (reviews.length > 0) {
+                revList.innerHTML = reviews.map(rev => `
+                    <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 16px; margin-bottom: 16px;">
+                        <div class="flex justify-between align-center" style="margin-bottom: 6px;">
+                            <span class="text-sm font-bold">${rev.profiles?.full_name || rev.customer_name || 'Guest User'}</span>
+                            <span class="text-xs" style="color: var(--text-tertiary);">${rev.created_at?.split('T')[0] || rev.created_at}</span>
+                        </div>
+                        <div class="flex gap-1" style="margin-bottom: 8px;">
+                            ${Array(5).fill(0).map((_, i) => `
+                                <span class="material-icons-round rating-star-icon" style="font-size: 14px;">
+                                    ${i < rev.rating ? 'star' : 'star_border'}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <p class="text-xs" style="color: var(--text-secondary); line-height: 1.4;">${rev.comment}</p>
+                    </div>
+                `).join('');
+            } else {
+                revList.innerHTML = `<p class="text-xs" style="color: var(--text-tertiary); font-style: italic;">No reviews yet.</p>`;
+            }
+
+            // If logged in, enable review form
+            const session = await authService.getSession();
+            if (session?.user) {
+                const form = document.getElementById('review-form');
+                form.style.display = 'flex';
+                
+                // Star toggler helpers
+                let selectedRating = 5;
+                const stars = form.querySelectorAll('.rating-star-icon');
+                stars.forEach(star => {
+                    star.addEventListener('click', () => {
+                        selectedRating = parseInt(star.dataset.value);
+                        stars.forEach((s, idx) => {
+                            s.textContent = idx < selectedRating ? 'star' : 'star_border';
+                        });
+                    });
+                });
+
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const comment = document.getElementById('review-comment').value;
+                    try {
+                        await dbService.addReview(currentProduct.id, session.user.id, selectedRating, comment);
+                        showToast('Thank you for your feedback!');
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } catch (err) {
+                        showToast('Error submitting review. Note: You must purchase the item first.', 'error');
+                    }
+                });
+            }
+
+            // Load Similar items
+            const allProducts = await dbService.getProducts();
+            const similarGrid = document.getElementById('similar-products-grid');
+            if (similarGrid) {
+                // Filter by same category and exclude current product
+                const similar = allProducts.filter(p => p.id !== currentProduct.id).slice(0, 4);
+                similarGrid.innerHTML = similar.map(p => createProductCardHTML(p)).join('');
+                bindProductCardListeners('#similar-products-grid');
+            }
+        });
+    </script>
+</body>
+</html>

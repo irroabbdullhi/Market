@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Seller Portal</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .chart-container {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            flex: 2;
+            min-width: 320px;
+        }
+        .top-products-card {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            box-shadow: var(--card-shadow);
+            flex: 1;
+            min-width: 280px;
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+            backdrop-filter: blur(4px);
+        }
+        .table-container {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            width: 100%;
+        }
+        .dashboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .dashboard-table th {
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-weight: 700;
+            text-align: left;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .dashboard-table td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        <!-- 1. Sidebar Panel Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header flex flex-col gap-2">
+                <span class="logo-text">SuuqLink</span>
+                <div class="flex align-center gap-2" style="background-color: var(--bg-secondary); padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <span class="material-icons-round" style="color: var(--color-brand); font-size: 18px;">storefront</span>
+                    <span class="text-xs font-bold" id="sidebar-shop-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;">Artisan Goods</span>
+                </div>
+            </div>
+
+            <ul class="sidebar-menu">
+                <li><button class="sidebar-link active w-full text-left" id="menu-dash-btn"><span class="material-icons-round">dashboard</span> Dashboard</button></li>
+                <li><button class="sidebar-link w-full text-left" id="menu-orders-btn"><span class="material-icons-round">receipt</span> Orders</button></li>
+                <li><button class="sidebar-link w-full text-left" id="menu-inv-btn"><span class="material-icons-round">inventory_2</span> Inventory</button></li>
+            </ul>
+
+            <div style="margin-top: auto; padding: 24px;" class="flex flex-col gap-3">
+                <button id="open-product-modal-btn" class="btn btn-primary w-full" style="padding: 12px;">
+                    <span class="material-icons-round">add</span> Add Product
+                </button>
+                <button id="sidebar-logout-btn" class="btn btn-secondary w-full" style="padding: 10px;">
+                    <span class="material-icons-round">logout</span> Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- 2. Dashboard Content Area -->
+        <main class="dashboard-main">
+            <!-- Header bar -->
+            <div class="dashboard-header">
+                <div>
+                    <h1 class="text-2xl font-bold" id="dashboard-title">Merchant Overview</h1>
+                    <p class="text-xs" style="color: var(--text-secondary);">Welcome back, monitor your store's sales performance metrics.</p>
+                </div>
+                <div class="flex align-center gap-3">
+                    <button class="btn btn-secondary" style="background-color: #e0f2fe; color: #0284c7; border: none;">Withdraw Earnings</button>
+                    <button id="header-add-product-btn" class="btn btn-primary"><span class="material-icons-round" style="font-size: 16px;">add</span> New Product</button>
+                </div>
+            </div>
+
+            <!-- Content dynamic switches -->
+            <div id="dashboard-view-panel">
+                
+                <!-- Metrics Card blocks -->
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="flex justify-between" style="color: var(--text-tertiary); margin-bottom: 8px;">
+                            <span class="text-xs font-bold">TOTAL REVENUE</span>
+                            <span class="material-icons-round" style="color: var(--color-brand);">payments</span>
+                        </div>
+                        <h2 class="text-2xl font-bold">$24,590.00</h2>
+                        <span class="text-xs font-bold" style="color: var(--color-brand);">+8.4% this week</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="flex justify-between" style="color: var(--text-tertiary); margin-bottom: 8px;">
+                            <span class="text-xs font-bold">ACTIVE ORDERS</span>
+                            <span class="material-icons-round" style="color: var(--color-accent);">shopping_bag</span>
+                        </div>
+                        <h2 class="text-2xl font-bold" id="metric-active-orders">148</h2>
+                        <span class="text-xs font-bold" style="color: var(--color-brand);">+12.1% this week</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="flex justify-between" style="color: var(--text-tertiary); margin-bottom: 8px;">
+                            <span class="text-xs font-bold">STORE VISITS</span>
+                            <span class="material-icons-round" style="color: #6366f1;">visibility</span>
+                        </div>
+                        <h2 class="text-2xl font-bold">12,402</h2>
+                        <span class="text-xs font-bold" style="color: var(--text-tertiary);">+0.5% this week</span>
+                    </div>
+                    <div class="metric-card">
+                        <div class="flex justify-between" style="color: var(--text-tertiary); margin-bottom: 8px;">
+                            <span class="text-xs font-bold">AVERAGE RATING</span>
+                            <span class="material-icons-round" style="color: #fbbf24;">star</span>
+                        </div>
+                        <h2 class="text-2xl font-bold">4.85 / 5</h2>
+                        <span class="text-xs font-bold" style="color: var(--color-brand);">4.9 store index</span>
+                    </div>
+                </div>
+
+                <!-- Charts & Lists -->
+                <div class="flex justify-between gap-6 flex-wrap" style="margin-bottom: 32px;">
+                    <!-- Weekly CSS bar chart -->
+                    <div class="chart-container">
+                        <h3 class="text-base font-bold">Revenue Analytics</h3>
+                        <div class="bar-chart-container">
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 40px;" data-value="$1,200"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Mon</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 120px;" data-value="$3,500"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Tue</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 60px;" data-value="$1,800"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Wed</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 160px;" data-value="$4,200"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Thu</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 190px; background-color: var(--color-brand);" data-value="$5,600"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Fri</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 100px;" data-value="$2,900"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Sat</span>
+                            </div>
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-bar" style="height: 140px;" data-value="$3,900"></div>
+                                <span class="text-xs" style="margin-top: 8px; color: var(--text-secondary);">Sun</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Products List card -->
+                    <div class="top-products-card">
+                        <h3 class="text-base font-bold" style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 16px;">Top Products</h3>
+                        <div class="flex flex-col gap-4">
+                            <div class="flex justify-between align-center">
+                                <div class="flex align-center gap-3">
+                                    <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=60" alt="Product" style="width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: contain; border: 1px solid var(--border-color);">
+                                    <div class="flex-col">
+                                        <span class="text-xs font-bold">Artisan Ceramic Teapot</span>
+                                        <span class="text-xs" style="color: var(--text-tertiary);">42 sales this week</span>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold" style="color: var(--color-brand);">$124.00</span>
+                            </div>
+                            <div class="flex justify-between align-center">
+                                <div class="flex align-center gap-3">
+                                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=60" alt="Product" style="width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: contain; border: 1px solid var(--border-color);">
+                                    <div class="flex-col">
+                                        <span class="text-xs font-bold">Woven Bamboo Basket</span>
+                                        <span class="text-xs" style="color: var(--text-tertiary);">31 sales this week</span>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold" style="color: var(--color-brand);">$58.50</span>
+                            </div>
+                            <div class="flex justify-between align-center">
+                                <div class="flex align-center gap-3">
+                                    <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=60" alt="Product" style="width: 40px; height: 40px; border-radius: var(--radius-sm); object-fit: contain; border: 1px solid var(--border-color);">
+                                    <div class="flex-col">
+                                        <span class="text-xs font-bold">Organic Linen Napkins</span>
+                                        <span class="text-xs" style="color: var(--text-tertiary);">28 sales this week</span>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold" style="color: var(--color-brand);">$32.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Orders Sheet -->
+                <div class="table-container">
+                    <div style="padding: 20px; border-bottom: 1px solid var(--border-color);" class="flex justify-between align-center">
+                        <h3 class="text-base font-bold">Recent Orders</h3>
+                        <a href="#" id="view-orders-link" class="text-xs font-semibold" style="color: var(--color-brand);">See all orders</a>
+                    </div>
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-orders-rows">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. ADD PRODUCT MODAL overlay -->
+    <div id="product-modal" class="modal-overlay hidden" style="display: none;">
+        <div style="background-color: var(--bg-primary); padding: 32px; border-radius: var(--radius-md); border: 1px solid var(--border-color); max-width: 600px; width: 90%; max-height: 90vh; overflow-y: auto; box-shadow: var(--card-shadow);">
+            <h3 class="text-xl font-bold" style="margin-bottom: 24px;">Add New Product</h3>
+            <form id="add-product-form">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Product Name (EN)</label>
+                        <input type="text" id="prod-name-en" class="form-input" placeholder="e.g. Wireless Headset" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Name (SO)</label>
+                        <input type="text" id="prod-name-so" class="form-input" placeholder="e.g. Sameecad bilaa silig ah" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Price (USD)</label>
+                        <input type="number" step="0.01" id="prod-price" class="form-input" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Stock Quantity</label>
+                        <input type="number" id="prod-stock" class="form-input" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SKU</label>
+                        <input type="text" id="prod-sku" class="form-input" placeholder="e.g. SQ-PROD-01" required>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Barcode</label>
+                        <input type="text" id="prod-barcode" class="form-input" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Product Type</label>
+                        <select id="prod-type" class="form-input" required>
+                            <option value="physical">Physical Product</option>
+                            <option value="digital">Digital Product</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select id="prod-category" class="form-input" required>
+                            <!-- Injected -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Upload Product Image</label>
+                    <input type="file" id="prod-image-file" class="form-input" accept="image/*" required style="padding: 8px;">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Description (EN)</label>
+                    <textarea id="prod-desc-en" class="form-input" style="height: 80px;" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Description (SO)</label>
+                    <textarea id="prod-desc-so" class="form-input" style="height: 80px;" required></textarea>
+                </div>
+
+                <!-- SEO Options -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">SEO Meta Title</label>
+                        <input type="text" id="prod-seo-title" class="form-input" placeholder="Optional">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SEO Meta Description</label>
+                        <input type="text" id="prod-seo-desc" class="form-input" placeholder="Optional">
+                    </div>
+                </div>
+
+                <div class="flex justify-between" style="margin-top: 24px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                    <button type="button" id="close-modal-btn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script triggers -->
+    <script type="module">
+        import { dbService } from '../js/services/dbService.js';
+        import { authService } from '../js/services/authService.js';
+        import { formatCurrency, formatDate, showToast } from '../js/utils/helpers.js';
+
+        let sellerUser = null;
+        let ordersList = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth
+            const session = await authService.getSession();
+            if (!session?.user) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            sellerUser = session.user;
+
+            // Load shop header profile
+            const profile = await authService.getUserProfile(sellerUser.id);
+            if (profile) {
+                document.getElementById('sidebar-shop-name').textContent = profile.full_name || 'My Shop';
+            }
+
+            // Populate category selects inside Modal
+            const categories = await dbService.getCategories();
+            const catSelect = document.getElementById('prod-category');
+            catSelect.innerHTML = categories.map(cat => `
+                <option value="${cat.id}">${cat.name_en}</option>
+            `).join('');
+
+            // Modals toggling
+            const modal = document.getElementById('product-modal');
+            const openBtn = document.getElementById('open-product-modal-btn');
+            const headerAddBtn = document.getElementById('header-add-product-btn');
+            const closeBtn = document.getElementById('close-modal-btn');
+
+            const toggleModal = () => {
+                const isHidden = modal.style.display === 'none';
+                modal.style.display = isHidden ? 'flex' : 'none';
+            };
+
+            openBtn.addEventListener('click', toggleModal);
+            headerAddBtn.addEventListener('click', toggleModal);
+            closeBtn.addEventListener('click', toggleModal);
+
+            // Load merchant statistics
+            ordersList = await dbService.getOrders('seller', sellerUser.id);
+            document.getElementById('metric-active-orders').textContent = ordersList.filter(o => o.status !== 'completed').length;
+            
+            // Load table rows
+            loadRecentOrders();
+
+            // Submit product form
+            document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const productData = {
+                    seller_id: sellerUser.id,
+                    name_en: document.getElementById('prod-name-en').value,
+                    name_so: document.getElementById('prod-name-so').value,
+                    price: document.getElementById('prod-price').value,
+                    stock: document.getElementById('prod-stock').value,
+                    sku: document.getElementById('prod-sku').value,
+                    barcode: document.getElementById('prod-barcode').value,
+                    type: document.getElementById('prod-type').value,
+                    category_id: document.getElementById('prod-category').value,
+                    description_en: document.getElementById('prod-desc-en').value,
+                    description_so: document.getElementById('prod-desc-so').value,
+                    seo_title: document.getElementById('prod-seo-title').value,
+                    seo_description: document.getElementById('prod-seo-desc').value,
+                    brand_id: 1 // Default local
+                };
+
+                const file = document.getElementById('prod-image-file').files[0];
+
+                try {
+                    showToast('Adding product... Please wait.');
+                    await dbService.addProduct(productData, file);
+                    showToast('Product added successfully!');
+                    toggleModal();
+                    
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } catch (err) {
+                    showToast(err.message, 'error');
+                }
+            });
+
+            // Logouts
+            document.getElementById('sidebar-logout-btn').addEventListener('click', async () => {
+                await authService.logout();
+                window.location.href = '/';
+            });
+        });
+
+        function loadRecentOrders() {
+            const tbody = document.getElementById('recent-orders-rows');
+            if (ordersList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-tertiary);">No orders found for your shop.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = ordersList.slice(0, 5).map(o => {
+                let badge = 'orange';
+                if (o.status === 'completed') badge = 'green';
+                if (o.status === 'cancelled') badge = 'red';
+
+                return `
+                    <tr data-order-id="${o.id}">
+                        <td class="font-semibold" style="color: var(--color-brand);">#${o.id.slice(0, 8).toUpperCase()}</td>
+                        <td>${o.profiles?.full_name || o.customer_name || 'Customer'}</td>
+                        <td>${o.created_at ? formatDate(o.created_at) : o.date}</td>
+                        <td class="font-bold">${formatCurrency(o.total_amount)}</td>
+                        <td>
+                            <span class="text-xs font-bold" style="background-color: ${badge}15; color: ${badge}; padding: 4px 8px; border-radius: var(--radius-full); text-transform: uppercase;">
+                                ${o.status}
+                            </span>
+                        </td>
+                        <td>
+                            ${o.status === 'paid' ? `
+                                <button class="btn btn-primary ship-order-direct" style="padding: 4px 10px; font-size: 11px;">Ship Order</button>
+                            ` : `
+                                <span style="color: var(--text-tertiary); font-size: 11px;">Processed</span>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            // Bind shipping direct actions
+            tbody.querySelectorAll('.ship-order-direct').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    const row = btn.closest('tr');
+                    const orderId = row.dataset.orderId;
+                    try {
+                        await dbService.updateOrderStatus(orderId, 'completed');
+                        showToast('Order status marked as completed / shipped.');
+                        await loadRecentOrders();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

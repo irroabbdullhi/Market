@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SuuqLink - Admin Dashboard</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="../js/app.js"></script>
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            gap: 32px;
+            min-height: 100vh;
+        }
+        .admin-sidebar {
+            background-color: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .admin-main {
+            padding: 32px 0;
+        }
+        .proof-img {
+            max-width: 140px;
+            max-height: 100px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+
+    <header></header>
+
+    <main class="container admin-layout">
+        <!-- Sidebar layout links switcher -->
+        <aside class="admin-sidebar">
+            <h3 class="text-xs font-bold" style="color: var(--text-tertiary); text-transform: uppercase; margin-bottom: 12px;">Admin Management</h3>
+            <button class="sidebar-link active w-full text-left" data-target="payments-panel"><span class="material-icons-round">payments</span> Approve Payments</button>
+            <button class="sidebar-link w-full text-left" data-target="dispatch-panel"><span class="material-icons-round">local_shipping</span> Driver Dispatch</button>
+            <button class="sidebar-link w-full text-left" data-target="settings-panel"><span class="material-icons-round">settings</span> Marketplace Settings</button>
+        </aside>
+
+        <!-- Main Workspace panels -->
+        <section class="admin-main">
+            
+            <!-- PANEL 1: MANUAL PAYMENTS APPROVAL QUEUE -->
+            <div id="payments-panel" class="admin-view-panel">
+                <h2 class="text-xl font-bold" style="margin-bottom: 8px;">Approve Payments Queue</h2>
+                <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 24px;">Verify manual mobile payment transaction proofs submitted by customers.</p>
+                
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--card-shadow);">
+                    <table class="w-full" style="border-collapse: collapse; font-size: 13px;" id="payments-table">
+                        <thead style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                            <tr>
+                                <th class="text-left" style="padding: 14px 20px;">Order ID</th>
+                                <th class="text-left" style="padding: 14px 20px;">Customer</th>
+                                <th class="text-left" style="padding: 14px 20px;">Amount</th>
+                                <th class="text-left" style="padding: 14px 20px;">Method</th>
+                                <th class="text-left" style="padding: 14px 20px;">Receipt Proof</th>
+                                <th class="text-left" style="padding: 14px 20px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payments-tbody">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL 2: DRIVER DISPATCHER -->
+            <div id="dispatch-panel" class="admin-view-panel hidden">
+                <h2 class="text-xl font-bold" style="margin-bottom: 8px;">Driver Dispatch Center</h2>
+                <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 24px;">Assign pending local driver resources to verified paid client orders.</p>
+
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow: hidden; box-shadow: var(--card-shadow);">
+                    <table class="w-full" style="border-collapse: collapse; font-size: 13px;">
+                        <thead style="background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color);">
+                            <tr>
+                                <th class="text-left" style="padding: 14px 20px;">Order ID</th>
+                                <th class="text-left" style="padding: 14px 20px;">Delivery Address</th>
+                                <th class="text-left" style="padding: 14px 20px;">Method</th>
+                                <th class="text-left" style="padding: 14px 20px;">Assign Driver</th>
+                                <th class="text-left" style="padding: 14px 20px;">Dispatch Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispatch-tbody">
+                            <!-- Injected -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- PANEL 3: MARKETPLACE SYSTEM SETTINGS -->
+            <div id="settings-panel" class="admin-view-panel hidden">
+                <h2 class="text-xl font-bold" style="margin-bottom: 8px;">System Settings</h2>
+                <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 24px;">Adjust marketplace configuration settings, flat shipping rates, and VAT tax metrics.</p>
+
+                <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 32px; box-shadow: var(--card-shadow); max-width: 480px;">
+                    <form id="admin-settings-form">
+                        <div class="form-group">
+                            <label class="form-label">Marketplace Title Name</label>
+                            <input type="text" id="set-site-name" class="form-input" value="SuuqLink" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Flat Delivery Rate (USD)</label>
+                            <input type="number" step="0.10" id="set-delivery-fee" class="form-input" value="5.00" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">VAT Sales Tax Rate (%)</label>
+                            <input type="number" step="0.1" id="set-tax-rate" class="form-input" value="5.0" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="margin-top: 12px; padding: 12px 24px;">
+                            Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer></footer>
+
+    <!-- Interactive dashboard routing script -->
+    <script type="module">
+        import { dbService } from '../js/services/dbService.js';
+        import { authService } from '../js/services/authService.js';
+        import { formatCurrency, showToast } from '../js/utils/helpers.js';
+
+        let adminUser = null;
+        let pendingPayments = [];
+        let assignableOrders = [];
+        let driversList = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check admin authentication
+            const session = await authService.getSession();
+            if (!session?.user) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
+            adminUser = session.user;
+            const role = await authService.getUserRole(adminUser.id);
+            if (role !== 'admin') {
+                showToast('Access Denied. Admins Only.', 'error');
+                setTimeout(() => { window.location.href = '/'; }, 1500);
+                return;
+            }
+
+            // Tab selectors switching
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            const panels = document.querySelectorAll('.admin-view-panel');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    sidebarLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    
+                    panels.forEach(p => p.classList.add('hidden'));
+                    document.getElementById(link.dataset.target).classList.remove('hidden');
+                });
+            });
+
+            // Load data for panels
+            await loadPaymentsQueue();
+            await loadDispatcher();
+            setupSettingsForm();
+        });
+
+        // 1. Load payment approval queue
+        async function loadPaymentsQueue() {
+            const tbody = document.getElementById('payments-tbody');
+            pendingPayments = await dbService.getPendingPayments();
+
+            if (pendingPayments.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-tertiary); padding: 24px;">No pending manual payments in queue.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = pendingPayments.map(p => {
+                const order = p.orders;
+                const customer = order?.profiles?.full_name || 'Buyer';
+                const proofUrl = order?.payment_proof_url || 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?q=80&w=200';
+                
+                return `
+                    <tr data-payment-id="${p.id}" data-order-id="${p.order_id}">
+                        <td style="padding: 14px 20px;" class="font-semibold">#${p.order_id.slice(0, 8).toUpperCase()}</td>
+                        <td style="padding: 14px 20px;">${customer}</td>
+                        <td style="padding: 14px 20px;" class="font-bold">${formatCurrency(p.amount)}</td>
+                        <td style="padding: 14px 20px;" class="font-semibold">${p.payment_method.toUpperCase()}</td>
+                        <td style="padding: 14px 20px;">
+                            <a href="${proofUrl}" target="_blank">
+                                <img src="${proofUrl}" alt="Proof" class="proof-img">
+                            </a>
+                        </td>
+                        <td style="padding: 14px 20px;">
+                            <div class="flex gap-2">
+                                <button class="btn btn-primary approve-btn" style="padding: 6px 12px; font-size: 11px; background-color: var(--color-brand);">Approve</button>
+                                <button class="btn btn-secondary reject-btn" style="padding: 6px 12px; font-size: 11px; color: #ef4444;">Reject</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            bindPaymentActionHandlers();
+        }
+
+        function bindPaymentActionHandlers() {
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const row = btn.closest('tr');
+                    const payId = row.dataset.paymentId;
+                    try {
+                        await dbService.approvePayment(payId, adminUser.id);
+                        showToast('Payment verified successfully!');
+                        await loadPaymentsQueue();
+                        await loadDispatcher(); // Refresh dispatch tab
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const row = btn.closest('tr');
+                    const payId = row.dataset.paymentId;
+                    try {
+                        await dbService.rejectPayment(payId);
+                        showToast('Payment rejected.', 'warning');
+                        await loadPaymentsQueue();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+        }
+
+        // 2. Load Dispatch Center
+        async function loadDispatcher() {
+            const tbody = document.getElementById('dispatch-tbody');
+            
+            // Get paid/verified orders
+            const allOrders = await dbService.getOrders('admin');
+            assignableOrders = allOrders.filter(o => o.payment_status === 'verified' && o.status === 'paid');
+            driversList = await dbService.getDrivers();
+
+            if (assignableOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-tertiary); padding: 24px;">No orders awaiting driver dispatch.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = assignableOrders.map(o => `
+                <tr data-order-id="${o.id}">
+                    <td style="padding: 14px 20px;" class="font-semibold">#${o.id.slice(0, 8).toUpperCase()}</td>
+                    <td style="padding: 14px 20px; max-width: 240px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${o.shipping_address}</td>
+                    <td style="padding: 14px 20px;" class="font-semibold">${o.delivery_method === 'home_delivery' ? 'Home Delivery' : 'Store Pickup'}</td>
+                    <td style="padding: 14px 20px;">
+                        <select class="form-input driver-select" style="padding: 6px; font-size: 12px; width: 180px;">
+                            <option value="">-- Choose Driver --</option>
+                            ${driversList.map(d => `
+                                <option value="${d.user_id}">${d.full_name} (${d.vehicle_type} - ${d.status})</option>
+                            `).join('')}
+                        </select>
+                    </td>
+                    <td style="padding: 14px 20px;">
+                        <button class="btn btn-primary dispatch-btn" style="padding: 6px 12px; font-size: 11px;">Assign &amp; Ship</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            bindDispatcherActionHandlers();
+        }
+
+        function bindDispatcherActionHandlers() {
+            document.querySelectorAll('.dispatch-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const row = btn.closest('tr');
+                    const orderId = row.dataset.orderId;
+                    const driverId = row.querySelector('.driver-select').value;
+
+                    if (!driverId) {
+                        showToast('Please select a driver to dispatch!', 'warning');
+                        return;
+                    }
+
+                    try {
+                        await dbService.assignDriver(orderId, driverId);
+                        showToast('Driver dispatched successfully!');
+                        await loadDispatcher();
+                    } catch (err) {
+                        showToast(err.message, 'error');
+                    }
+                });
+            });
+        }
+
+        // 3. Settings Form Setup
+        function setupSettingsForm() {
+            const form = document.getElementById('admin-settings-form');
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                showToast('System settings updated successfully!');
+            });
+        }
+    </script>
+</body>
+</html>

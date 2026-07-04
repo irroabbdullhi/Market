@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Primary SEO Meta Tags -->
+    <title>SuuqLink - Premium Multi-Vendor Local E-Commerce Marketplace</title>
+    <meta name="description" content="Discover high-quality products from your neighborhood's best shops. Support local businesses with fast delivery on groceries, electronics, and fashion.">
+    <meta name="keywords" content="marketplace, local shops, groceries, electronics, delivery, multi-vendor, Somalia, SuuqLink">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="SuuqLink - Premium Local Marketplace">
+    <meta property="og:description" content="Discover high-quality products from your neighborhood's best shops with secure payment and instant delivery.">
+    <meta property="og:image" content="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="./css/styles.css">
+
+    <!-- Supabase JS Client CDN Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- App Main Script (Bootstrap) -->
+    <script type="module" src="./js/app.js"></script>
+</head>
+<body>
+
+    <!-- Shared Responsive Header -->
+    <header></header>
+
+    <!-- Main Homepage Content -->
+    <main class="container" style="margin-top: 32px;">
+        
+        <!-- Hero Banner Section -->
+        <section class="hero-banner flex justify-between align-center gap-8 flex-wrap">
+            <div class="flex-col" style="flex: 1; min-width: 320px;">
+                <span class="badge-green">
+                    <span class="material-icons-round" style="font-size: 14px;">eco</span>
+                    Top-Rated Local Marketplace
+                </span>
+                <h1>Everything You Need From<br><span style="color: var(--color-brand);">Local Businesses</span></h1>
+                <p>Discover high-quality products from your neighborhood's best shops. From daily groceries to premium electronics, we bridge the gap between local quality and global convenience.</p>
+                <div class="flex gap-4">
+                    <a href="#flash-deals" class="btn btn-primary" style="padding: 14px 28px; border-radius: var(--radius-sm); font-size: 15px;">Shop Now &rarr;</a>
+                    <a href="#local-shops" class="btn btn-secondary" style="padding: 14px 28px; border-radius: var(--radius-sm); font-size: 15px;">Browse Stores</a>
+                </div>
+                
+                <div class="flex align-center gap-3" style="margin-top: 48px;">
+                    <div class="flex" style="position: relative; height: 32px; width: 80px;">
+                        <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=60" alt="Customer" style="width: 32px; height: 32px; border-radius: var(--radius-full); border: 2px solid var(--bg-primary); position: absolute; left: 0;">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=60" alt="Customer" style="width: 32px; height: 32px; border-radius: var(--radius-full); border: 2px solid var(--bg-primary); position: absolute; left: 16px;">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=60" alt="Customer" style="width: 32px; height: 32px; border-radius: var(--radius-full); border: 2px solid var(--bg-primary); position: absolute; left: 32px;">
+                        <div class="flex align-center justify-center font-bold text-xs" style="width: 32px; height: 32px; border-radius: var(--radius-full); background-color: var(--color-accent); color: white; border: 2px solid var(--bg-primary); position: absolute; left: 48px;">10k+</div>
+                    </div>
+                    <span class="text-xs font-semibold" style="color: var(--text-secondary);">Trusted by over <strong>10,000+</strong> local customers &amp; sellers.</span>
+                </div>
+            </div>
+
+            <!-- Right side banner images promotion -->
+            <div style="flex: 1; min-width: 320px; position: relative;">
+                <img class="hero-image w-full" src="https://images.unsplash.com/photo-1542838132-92c53300491e?q=80&w=600" alt="Summer Local Harvest">
+                <div style="position: absolute; bottom: 24px; left: 24px; right: 24px; background: rgba(255,255,255,0.85); backdrop-filter: blur(8px); padding: 20px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.3); box-shadow: var(--card-shadow);">
+                    <span class="text-xs font-bold text-red" style="color: var(--color-accent);">SUMMER LOCAL HARVEST</span>
+                    <h3 class="text-lg font-bold" style="color: #0f172a; margin: 4px 0 8px 0;">Up to 40% OFF in Groceries</h3>
+                    <div class="flex justify-between align-center">
+                        <span class="text-xs font-semibold" style="color: var(--text-secondary);">⚡ Instant Delivery (under 60 min)</span>
+                        <a href="/pages/search-results.html?query=groceries" class="material-icons-round" style="color: var(--color-brand); cursor: pointer;">arrow_forward</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Popular Categories Section -->
+        <section id="categories" style="margin-top: 64px;">
+            <div class="flex justify-between align-center" style="margin-bottom: 24px;">
+                <div class="flex-col">
+                    <h2 class="text-2xl font-bold">Popular Categories</h2>
+                    <p class="text-sm" style="color: var(--text-secondary);">Explore our most sought after local items</p>
+                </div>
+                <a href="#categories" class="flex align-center gap-2 font-semibold" style="color: var(--color-brand); font-size: 14px;">
+                    View All <span class="material-icons-round" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+
+            <!-- Categories Grid -->
+            <div class="grid grid-cols-6 gap-4" id="categories-grid">
+                <!-- Will be populated dynamically -->
+            </div>
+        </section>
+
+        <!-- Flash Deals Section with Countdown -->
+        <section id="flash-deals" style="margin-top: 64px;">
+            <div class="flash-banner flex justify-between align-center flex-wrap gap-4">
+                <div class="flex align-center gap-3">
+                    <span class="material-icons-round" style="font-size: 32px; animation: pulse 1.5s infinite;">flash_on</span>
+                    <div class="flex-col">
+                        <h3 class="text-lg font-bold">Flash Deals</h3>
+                        <p class="text-xs" style="opacity: 0.9;">Hurry! These offers disappear in...</p>
+                    </div>
+                </div>
+                <!-- Timer Countdowns -->
+                <div class="flex gap-2">
+                    <div class="timer-box" id="timer-hours">08</div>
+                    <div class="timer-box" id="timer-mins">42</div>
+                    <div class="timer-box" id="timer-secs">06</div>
+                </div>
+            </div>
+
+            <!-- Flash Deals Products Grid -->
+            <div class="grid grid-cols-4 gap-6" id="flash-products-grid">
+                <!-- Dynamically populated from JS -->
+            </div>
+        </section>
+
+        <!-- Featured Local Businesses -->
+        <section id="local-shops" style="margin-top: 64px;">
+            <div class="flex-col" style="margin-bottom: 32px;">
+                <h2 class="text-2xl font-bold">Featured Local Businesses</h2>
+                <p class="text-sm" style="color: var(--text-secondary);">Support premium shops right in your neighborhood</p>
+            </div>
+
+            <!-- Shops Grid -->
+            <div class="grid grid-cols-3 gap-6" id="shops-grid">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Trust Badges Section -->
+        <section class="flex-col align-center text-center" style="margin-top: 80px; padding: 48px; border-radius: var(--radius-lg); background-color: var(--bg-primary); border: 1px solid var(--border-color);">
+            <h2 class="text-2xl font-bold" style="margin-bottom: 8px;">Why Shop on SuuqLink?</h2>
+            <p class="text-sm" style="color: var(--text-secondary); max-width: 500px; margin-bottom: 48px;">We combine the personal touch of local shopping with the seamless efficiency of a world-class SaaS platform.</p>
+            
+            <div class="grid grid-cols-4 gap-6 w-full">
+                <div class="flex flex-col align-center text-center gap-3">
+                    <div class="category-icon-circle" style="background-color: var(--bg-secondary);"><span class="material-icons-round">local_shipping</span></div>
+                    <h3 class="text-base font-bold">Fast Delivery</h3>
+                    <p class="text-xs" style="color: var(--text-secondary);">Orders from local stores delivered in under 60 minutes.</p>
+                </div>
+                <div class="flex flex-col align-center text-center gap-3">
+                    <div class="category-icon-circle" style="background-color: var(--bg-secondary);"><span class="material-icons-round">verified</span></div>
+                    <h3 class="text-base font-bold">Trusted Sellers</h3>
+                    <p class="text-xs" style="color: var(--text-secondary);">Every merchant is manually verified to ensure high-quality standards.</p>
+                </div>
+                <div class="flex flex-col align-center text-center gap-3">
+                    <div class="category-icon-circle" style="background-color: var(--bg-secondary);"><span class="material-icons-round">payment</span></div>
+                    <h3 class="text-base font-bold">Secure Payment</h3>
+                    <p class="text-xs" style="color: var(--text-secondary);">Bank-level encryption for all your transactions and data.</p>
+                </div>
+                <div class="flex flex-col align-center text-center gap-3">
+                    <div class="category-icon-circle" style="background-color: var(--bg-secondary);"><span class="material-icons-round">support_agent</span></div>
+                    <h3 class="text-base font-bold">24/7 Support</h3>
+                    <p class="text-xs" style="color: var(--text-secondary);">Our dedicated team is always here to help you with any inquiries.</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Shared Footer -->
+    <footer></footer>
+
+    <!-- Homepage Dynamic loader script -->
+    <script type="module">
+        import { dbService } from './js/services/dbService.js';
+        import { createProductCardHTML, bindProductCardListeners } from './js/components/ProductCard.js';
+        import { getLocalizedText } from './js/utils/helpers.js';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Load Categories
+            const categories = await dbService.getCategories();
+            const catGrid = document.getElementById('categories-grid');
+            if (catGrid) {
+                catGrid.innerHTML = categories.map(cat => `
+                    <a href="/pages/search-results.html?category=${cat.slug}" class="category-item">
+                        <div class="category-icon-circle">
+                            <span class="material-icons-round" style="font-size: 24px;">${cat.icon || 'store'}</span>
+                        </div>
+                        <h4 class="text-sm font-semibold" style="margin: 0; color: var(--text-primary);">${getLocalizedText(cat, 'name')}</h4>
+                    </a>
+                `).join('');
+            }
+
+            // Load Flash Products
+            const products = await dbService.getProducts();
+            const prodGrid = document.getElementById('flash-products-grid');
+            if (prodGrid) {
+                prodGrid.innerHTML = products.slice(0, 4).map(p => createProductCardHTML(p)).join('');
+                bindProductCardListeners('#flash-products-grid');
+            }
+
+            // Load Shops
+            const shops = await dbService.getLocalShops();
+            const shopGrid = document.getElementById('shops-grid');
+            if (shopGrid) {
+                shopGrid.innerHTML = shops.map(shop => `
+                    <div class="shop-card flex flex-col align-center">
+                        <div class="shop-logo-circle">
+                            <img src="${shop.logo}" alt="${shop.name}">
+                        </div>
+                        <h3 class="text-base font-bold" style="margin-bottom: 4px; color: var(--text-primary);">${shop.name}</h3>
+                        <div class="flex align-center gap-1 text-xs font-semibold" style="color: var(--text-secondary); margin-bottom: 8px;">
+                            <span class="material-icons-round" style="font-size: 14px; color: #fbbf24;">star</span>
+                            <span>${shop.rating}</span>
+                            <span style="color: var(--text-tertiary);">|</span>
+                            <span>${shop.distance}</span>
+                        </div>
+                        <p class="text-xs" style="color: var(--text-secondary); margin-bottom: 20px; height: 36px; overflow: hidden; line-height: 1.4;">${shop.desc}</p>
+                        <a href="/pages/search-results.html?seller=${shop.id}" class="btn btn-secondary w-full">Visit Store</a>
+                    </div>
+                `).join('');
+            }
+
+            // Flash Deals Countdown Animation
+            let hrs = 8, mins = 42, secs = 6;
+            setInterval(() => {
+                secs--;
+                if (secs < 0) {
+                    secs = 59;
+                    mins--;
+                    if (mins < 0) {
+                        mins = 59;
+                        hrs--;
+                        if (hrs < 0) {
+                            hrs = 23;
+                        }
+                    }
+                }
+                document.getElementById('timer-hours').textContent = String(hrs).padStart(2, '0');
+                document.getElementById('timer-mins').textContent = String(mins).padStart(2, '0');
+                document.getElementById('timer-secs').textContent = String(secs).padStart(2, '0');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
