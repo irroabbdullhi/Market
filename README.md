@@ -15,3 +15,4 @@ SuuqLink is a complete, production-ready Multi-Vendor E-Commerce Marketplace bui
 ## 🛠️ Database Setup
 
 Run the migrations in `supabase/migrations.sql` inside the Supabase SQL editor to create all the database tables, views, RLS policies, storage buckets, and seed data.
+# Market
