@@ -1,15 +1,15 @@
 // SuuqLink App Configuration
 
 // Fallback hardcoded defaults if you wish to configure them directly in code
-const DEFAULT_SUPABASE_URL = '';
-const DEFAULT_SUPABASE_KEY = '';
+const DEFAULT_SUPABASE_URL = 'https://uiceedlnwrhxbqgyzbaf.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_irJYVkVSiRxnMbuEp2fthg_M_XE5lop';
 
 export const CONFIG = {
     get supabaseUrl() {
-        return localStorage.getItem('https://uiceedlnwrhxbqgyzbaf.supabase.co') || DEFAULT_SUPABASE_URL;
+        return localStorage.getItem('SUUQLINK_SUPABASE_URL') || DEFAULT_SUPABASE_URL;
     },
     get supabaseKey() {
-        return localStorage.getItem('sb_publishable_irJYVkVSiRxnMbuEp2fthg_M_XE5lop') || DEFAULT_SUPABASE_KEY;
+        return localStorage.getItem('SUUQLINK_SUPABASE_URL') || DEFAULT_SUPABASE_KEY;
     },
     setCredentials(url, key) {
         localStorage.setItem('SUUQLINK_SUPABASE_URL', url.trim());
