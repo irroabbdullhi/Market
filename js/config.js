@@ -9,7 +9,7 @@ export const CONFIG = {
         return localStorage.getItem('SUUQLINK_SUPABASE_URL') || DEFAULT_SUPABASE_URL;
     },
     get supabaseKey() {
-        return localStorage.getItem('SUUQLINK_SUPABASE_URL') || DEFAULT_SUPABASE_KEY;
+        return localStorage.getItem('SUUQLINK_SUPABASE_KEY') || DEFAULT_SUPABASE_KEY;
     },
     setCredentials(url, key) {
         localStorage.setItem('SUUQLINK_SUPABASE_URL', url.trim());
