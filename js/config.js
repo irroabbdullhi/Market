@@ -6,10 +6,10 @@ const DEFAULT_SUPABASE_KEY = '';
 
 export const CONFIG = {
     get supabaseUrl() {
-        return localStorage.getItem('SUUQLINK_SUPABASE_URL') || DEFAULT_SUPABASE_URL;
+        return localStorage.getItem('https://uiceedlnwrhxbqgyzbaf.supabase.co') || DEFAULT_SUPABASE_URL;
     },
     get supabaseKey() {
-        return localStorage.getItem('SUUQLINK_SUPABASE_KEY') || DEFAULT_SUPABASE_KEY;
+        return localStorage.getItem('sb_publishable_irJYVkVSiRxnMbuEp2fthg_M_XE5lop') || DEFAULT_SUPABASE_KEY;
     },
     setCredentials(url, key) {
         localStorage.setItem('SUUQLINK_SUPABASE_URL', url.trim());
